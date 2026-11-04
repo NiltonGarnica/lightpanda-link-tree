@@ -1,0 +1,18 @@
+# Agrega un sitio de prueba con dos dominios (site-a y site-b).
+services:
+  api:
+    environment:
+      ALLOW_PRIVATE_NETWORKS: "true"
+
+  demo-site:
+    image: python:3.12-slim
+    command: python -u /demo_site.py
+    volumes:
+      - ./tests/e2e/demo_site.py:/demo_site.py:ro
+    ports:
+      - "127.0.0.1:8081:8000"
+    networks:
+      default:
+        aliases:
+          - site-a
+          - site-b
