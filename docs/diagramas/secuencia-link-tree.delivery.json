@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "24dbbb2a-e1df-43e0-9a28-6b985431d33e",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "C:\\Users\\garni\\lightpanda-link-tree\\docs\\diagramas\\secuencia-link-tree.sequence.json",
+  "output": "C:\\Users\\garni\\lightpanda-link-tree\\docs\\diagramas\\secuencia-link-tree.html",
+  "specification": {
+    "sha256": "f13d9a324de6b9f81b19bf11619e3bfbd3a60eae3007c5f5839588e976af0fe2",
+    "bytes": 7781
+  },
+  "artifact": {
+    "sha256": "d85ecea658d18bf266b70b630eb4b111f946d75c7da7c625ac17e3266efad66d",
+    "bytes": 852189
+  }
+}

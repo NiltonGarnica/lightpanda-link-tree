@@ -1,0 +1,84 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Flujo: generar el árbol de enlaces",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": "docs/diagramas/flujo-arbol-enlaces.html",
+    "repository": {
+      "url": "https://github.com/NiltonGarnica/lightpanda-link-tree.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "71cd47e2a31935350e197ec628939e91dfe8ee8e"
+    }
+  },
+  "lanes": [
+    { "id": "cliente", "label": "Cliente" },
+    { "id": "api", "label": "API" },
+    { "id": "recorrido", "label": "Recorrido" },
+    { "id": "navegador", "label": "Lightpanda" },
+    { "id": "errores", "label": "Errores", "variant": "exception" }
+  ],
+  "mainPath": ["enviar", "validar", "guardia", "nivel", "abrir", "peticiones", "leer", "filtrar", "tags", "guardar", "recibir"],
+  "nodes": [
+    { "id": "enviar", "lane": "cliente", "col": 0, "type": "external", "label": "Enviar petición", "sublabel": "URL y token", "sources": [{ "path": "app/api/routes.py", "line": 35, "end_line": 41 }] },
+    { "id": "recibir", "lane": "cliente", "col": 5, "type": "external", "label": "Recibir JSON", "sublabel": "árbol, tags, stats", "sources": [{ "path": "app/api/routes.py", "line": 62 }] },
+    { "id": "validar", "lane": "api", "col": 0, "type": "backend", "label": "Validar datos", "sublabel": "URL, token, niveles", "sources": [{ "path": "app/schemas/link_tree.py", "line": 8, "end_line": 23 }] },
+    { "id": "guardia", "lane": "api", "col": 1, "type": "security", "label": "¿URL pública?", "sublabel": "bloquea redes internas", "sources": [{ "path": "app/api/routes.py", "line": 47, "end_line": 52 }, { "path": "app/services/url_policy.py", "line": 56, "end_line": 87 }] },
+    { "id": "guardar", "lane": "api", "col": 5, "type": "backend", "label": "Guardar tags", "sublabel": "en memoria, por tree_id", "sources": [{ "path": "app/api/routes.py", "line": 61 }, { "path": "app/services/tags.py", "line": 52, "end_line": 62 }] },
+    { "id": "nivel", "lane": "recorrido", "col": 2, "type": "backend", "label": "Abrir nivel actual", "sublabel": "hasta 4 páginas a la vez", "sources": [{ "path": "app/services/link_tree.py", "line": 40, "end_line": 49 }, { "path": "app/services/link_tree.py", "line": 51, "end_line": 75 }] },
+    { "id": "filtrar", "lane": "recorrido", "col": 4, "type": "backend", "label": "Filtrar enlaces", "sublabel": "mismo sitio, sin repetidos", "sources": [{ "path": "app/services/link_tree.py", "line": 97, "end_line": 114 }] },
+    { "id": "tags", "lane": "recorrido", "col": 5, "type": "backend", "label": "Generar tags", "sublabel": "de la URL y el título", "sources": [{ "path": "app/services/link_tree.py", "line": 135, "end_line": 138 }, { "path": "app/services/tags.py", "line": 39, "end_line": 43 }] },
+    { "id": "abrir", "lane": "navegador", "col": 2, "type": "cloud", "label": "Abrir página", "sublabel": "conexión CDP nueva", "sources": [{ "path": "app/services/lightpanda_client.py", "line": 166, "end_line": 190 }] },
+    { "id": "peticiones", "lane": "navegador", "col": 3, "type": "security", "label": "Revisar peticiones", "sublabel": "token solo al mismo sitio", "sources": [{ "path": "app/services/lightpanda_client.py", "line": 125, "end_line": 146 }] },
+    { "id": "leer", "lane": "navegador", "col": 4, "type": "cloud", "label": "Leer enlaces", "sublabel": "espera al JavaScript", "sources": [{ "path": "app/services/lightpanda_client.py", "line": 206, "end_line": 216 }] },
+    { "id": "error4xx", "lane": "errores", "col": 1, "type": "security", "label": "Error 400 o 422", "sublabel": "no se recorre nada", "sources": [{ "path": "app/api/routes.py", "line": 44, "end_line": 52 }] },
+    { "id": "error503", "lane": "errores", "col": 2, "type": "security", "label": "Error 503", "sublabel": "Lightpanda no responde", "sources": [{ "path": "app/api/routes.py", "line": 59, "end_line": 60 }] },
+    { "id": "fallo", "lane": "errores", "col": 4, "type": "security", "label": "Enlace con error", "sublabel": "el recorrido continúa", "sources": [{ "path": "app/services/link_tree.py", "line": 80, "end_line": 87 }] }
+  ],
+  "edges": [
+    { "id": "enviar-validar", "from": "enviar", "to": "validar", "variant": "emphasis" },
+    { "id": "validar-guardia", "from": "validar", "to": "guardia", "label": "válido", "variant": "default" },
+    { "id": "validar-error", "from": "validar", "to": "error4xx", "label": "inválido", "variant": "security", "role": "error" },
+    { "id": "guardia-error", "from": "guardia", "to": "error4xx", "label": "interna", "variant": "security", "role": "error" },
+    { "id": "guardia-nivel", "from": "guardia", "to": "nivel", "label": "pública", "variant": "emphasis" },
+    { "id": "nivel-abrir", "from": "nivel", "to": "abrir", "variant": "emphasis" },
+    { "id": "abrir-error", "from": "abrir", "to": "error503", "label": "sin conexión", "variant": "security", "role": "error" },
+    { "id": "abrir-peticiones", "from": "abrir", "to": "peticiones", "variant": "default" },
+    { "id": "peticiones-leer", "from": "peticiones", "to": "leer", "variant": "default" },
+    { "id": "leer-fallo", "from": "leer", "to": "fallo", "label": "falla o 4xx/5xx", "variant": "security", "role": "error" },
+    { "id": "leer-filtrar", "from": "leer", "to": "filtrar", "label": "enlaces", "variant": "emphasis" },
+    { "id": "filtrar-nivel", "from": "filtrar", "to": "nivel", "label": "siguiente nivel", "variant": "dashed", "role": "return" },
+    { "id": "filtrar-tags", "from": "filtrar", "to": "tags", "label": "listo", "variant": "emphasis" },
+    { "id": "tags-guardar", "from": "tags", "to": "guardar", "variant": "default" },
+    { "id": "guardar-recibir", "from": "guardar", "to": "recibir", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Niveles",
+      "items": [
+        "La URL recibida es el nivel 0",
+        "Se abren los niveles 0, 1 y 2",
+        "Los enlaces del nivel 3 se listan, pero no se abren"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Seguridad",
+      "items": [
+        "El token no llega a otros dominios",
+        "Las peticiones hacia redes internas se bloquean"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Límites",
+      "items": [
+        "Con MAX_LINKS o CRAWL_TIMEOUT_SECONDS se devuelve un árbol parcial",
+        "En ese caso, stats.truncated es true"
+      ]
+    }
+  ]
+}

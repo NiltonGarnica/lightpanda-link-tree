@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Secuencia: POST /api/v1/link-tree",
+    "locale": "es",
+    "quality_profile": "showcase",
+    "output": "docs/diagramas/secuencia-link-tree.html",
+    "repository": {
+      "url": "https://github.com/NiltonGarnica/lightpanda-link-tree.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "71cd47e2a31935350e197ec628939e91dfe8ee8e"
+    }
+  },
+  "participants": [
+    {
+      "id": "cliente",
+      "type": "external",
+      "label": "Cliente",
+      "sublabel": "/docs o curl",
+      "sources": [
+        {
+          "path": "README.md",
+          "line": 33,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API",
+      "sublabel": "routes.py",
+      "sources": [
+        {
+          "path": "app/api/routes.py",
+          "line": 35,
+          "end_line": 62
+        }
+      ]
+    },
+    {
+      "id": "guardia",
+      "type": "security",
+      "label": "HostGuard",
+      "sublabel": "url_policy.py",
+      "sources": [
+        {
+          "path": "app/services/url_policy.py",
+          "line": 56,
+          "end_line": 87
+        }
+      ]
+    },
+    {
+      "id": "recorrido",
+      "type": "backend",
+      "label": "Recorrido",
+      "sublabel": "link_tree.py",
+      "sources": [
+        {
+          "path": "app/services/link_tree.py",
+          "line": 40,
+          "end_line": 75
+        },
+        {
+          "path": "app/services/link_tree.py",
+          "line": 97,
+          "end_line": 114
+        }
+      ]
+    },
+    {
+      "id": "conector",
+      "type": "backend",
+      "label": "LightpandaClient",
+      "sublabel": "lightpanda_client.py",
+      "sources": [
+        {
+          "path": "app/services/lightpanda_client.py",
+          "line": 166,
+          "end_line": 216
+        },
+        {
+          "path": "app/services/lightpanda_client.py",
+          "line": 125,
+          "end_line": 146
+        }
+      ]
+    },
+    {
+      "id": "lightpanda",
+      "type": "cloud",
+      "label": "Lightpanda",
+      "sublabel": "navegador",
+      "sources": [
+        {
+          "path": "docker-compose.yml",
+          "line": 13,
+          "end_line": 27
+        }
+      ]
+    },
+    {
+      "id": "sitio",
+      "type": "external",
+      "label": "Sitio web",
+      "sublabel": "URL recibida",
+      "sources": [
+        {
+          "path": "app/services/lightpanda_client.py",
+          "line": 193
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 275,
+      "label": "Entrada"
+    },
+    {
+      "from": 285,
+      "to": 832,
+      "label": "Por cada página"
+    },
+    {
+      "from": 842,
+      "to": 930,
+      "label": "Respuesta"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post",
+      "from": "cliente",
+      "to": "api",
+      "y": 170,
+      "label": "POST link-tree",
+      "variant": "emphasis",
+      "note": "url, bearer_token y max_depth"
+    },
+    {
+      "id": "revisar-url",
+      "from": "api",
+      "to": "guardia",
+      "y": 220,
+      "label": "allowed(url)",
+      "variant": "security"
+    },
+    {
+      "id": "url-ok",
+      "from": "guardia",
+      "to": "api",
+      "y": 250,
+      "label": "pública",
+      "variant": "return",
+      "note": "si no lo es: error 400"
+    },
+    {
+      "id": "construir",
+      "from": "api",
+      "to": "recorrido",
+      "y": 300,
+      "label": "build_link_tree",
+      "variant": "emphasis"
+    },
+    {
+      "id": "visitar",
+      "from": "recorrido",
+      "to": "conector",
+      "y": 330,
+      "label": "visit(url, token)",
+      "variant": "default",
+      "note": "hasta 4 páginas a la vez"
+    },
+    {
+      "id": "conectar",
+      "from": "conector",
+      "to": "lightpanda",
+      "y": 380,
+      "label": "conectar por CDP",
+      "variant": "default",
+      "note": "si falla: error 503"
+    },
+    {
+      "id": "navegar",
+      "from": "conector",
+      "to": "lightpanda",
+      "y": 430,
+      "label": "Page.navigate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pausa",
+      "from": "lightpanda",
+      "to": "conector",
+      "y": 460,
+      "label": "requestPaused",
+      "variant": "dashed",
+      "note": "pausa cada petición"
+    },
+    {
+      "id": "revisar-peticion",
+      "from": "conector",
+      "to": "guardia",
+      "y": 510,
+      "label": "allowed(url)",
+      "variant": "security"
+    },
+    {
+      "id": "peticion-ok",
+      "from": "guardia",
+      "to": "conector",
+      "y": 540,
+      "label": "permitida",
+      "variant": "return"
+    },
+    {
+      "id": "continuar",
+      "from": "conector",
+      "to": "lightpanda",
+      "y": 570,
+      "label": "continueRequest",
+      "variant": "security",
+      "note": "token solo si es el mismo sitio"
+    },
+    {
+      "id": "pedir-pagina",
+      "from": "lightpanda",
+      "to": "sitio",
+      "y": 620,
+      "label": "petición HTTP",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pagina",
+      "from": "sitio",
+      "to": "lightpanda",
+      "y": 650,
+      "label": "HTML y JS",
+      "variant": "return"
+    },
+    {
+      "id": "cargada",
+      "from": "lightpanda",
+      "to": "conector",
+      "y": 680,
+      "label": "página cargada",
+      "variant": "dashed"
+    },
+    {
+      "id": "leer",
+      "from": "conector",
+      "to": "lightpanda",
+      "y": 710,
+      "label": "Runtime.evaluate",
+      "variant": "default",
+      "note": "repite hasta que no aparecen enlaces"
+    },
+    {
+      "id": "enlaces",
+      "from": "lightpanda",
+      "to": "conector",
+      "y": 770,
+      "label": "título y enlaces",
+      "variant": "return"
+    },
+    {
+      "id": "resultado",
+      "from": "conector",
+      "to": "recorrido",
+      "y": 800,
+      "label": "PageResult",
+      "variant": "return",
+      "note": "filtra y prepara el siguiente nivel"
+    },
+    {
+      "id": "arbol",
+      "from": "recorrido",
+      "to": "api",
+      "y": 855,
+      "label": "árbol y tags",
+      "variant": "return",
+      "note": "tags guardados por tree_id"
+    },
+    {
+      "id": "respuesta",
+      "from": "api",
+      "to": "cliente",
+      "y": 905,
+      "label": "200 JSON",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "api",
+      "from": 170,
+      "to": 905,
+      "type": "backend"
+    },
+    {
+      "participant": "guardia",
+      "from": 215,
+      "to": 255,
+      "type": "security"
+    },
+    {
+      "participant": "recorrido",
+      "from": 300,
+      "to": 855,
+      "type": "backend"
+    },
+    {
+      "participant": "conector",
+      "from": 330,
+      "to": 800,
+      "type": "backend"
+    },
+    {
+      "participant": "guardia",
+      "from": 505,
+      "to": 545,
+      "type": "security"
+    },
+    {
+      "participant": "lightpanda",
+      "from": 380,
+      "to": 770,
+      "type": "cloud"
+    },
+    {
+      "participant": "sitio",
+      "from": 615,
+      "to": 655,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Qué se repite",
+      "items": [
+        "El bloque central se repite por cada página de los niveles 0, 1 y 2",
+        "La revisión de peticiones se repite por cada petición de la página"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Token",
+      "items": [
+        "LightpandaClient lo añade petición por petición",
+        "Scripts externos y redirecciones a otros dominios no lo reciben"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Si algo falla",
+      "items": [
+        "Datos inválidos: 422",
+        "URL interna: 400",
+        "Lightpanda sin conexión: 503",
+        "Una página con error se marca en su nodo y el recorrido continúa"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c089d632-09d3-42a2-ac92-744d59b4582a",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\garni\\lightpanda-link-tree\\docs\\diagramas\\flujo-arbol-enlaces.workflow.json",
+  "output": "C:\\Users\\garni\\lightpanda-link-tree\\docs\\diagramas\\flujo-arbol-enlaces.html",
+  "specification": {
+    "sha256": "bbe884c43aa0ea1a7bd05f79f5b9618822d43057547b202385db89303ebc7cfe",
+    "bytes": 6422
+  },
+  "artifact": {
+    "sha256": "b0e3467b64c5e551cfe766126fc75c49b03f20a44876089ec8d3df0ee6e807d2",
+    "bytes": 858437
+  }
+}
